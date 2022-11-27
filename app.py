@@ -1,5 +1,8 @@
 from pyrogram import Client
 import cohere
+import weaviate # to communicate to the Weaviate instance
+from weaviate.wcs import WCS
+
 
 """
 So to start with Pyrogram we have to make some manipulations.
@@ -11,30 +14,73 @@ To run script we use this line:app = Client("pyroApp", api_id=api_id, api_hash=a
 
 More about Pyrogram: https://docs.pyrogram.org/
 More about cohere: https://docs.cohere.ai/docs
+More about weaviate: https://weaviate.io/
 """
 
 # api_id = your api_id
-#
+
 # api_hash = "your api_hash"
-#
+
 # app = Client("pyroApp", api_id=api_id, api_hash=api_hash)
 
+
+def get_posts_from_the_channel(group_id):
+    channel = group_id
+    app = Client("pyroApp")
+    all_msg = []
+    with app:
+        for message in app.get_chat_history(channel):
+            if message.text is not None:
+                all_msg.append(message.text)
+
+    return all_msg
+
+
+def add_channel(channel, db_url):
+    client = weaviate.Client(db_url)
+    properties = {"name": channel}
+    client.batch.add_data_object(properties, "Channels")
+
+
+def add_posts(data, db_url):
+    client = weaviate.Client(db_url)
+    for msg in data:
+        properties = {
+          "description": msg
+        }
+
+        client.batch.add_data_object(properties, "Posts")
+
+    client.batch.create_objects()
+
+
+# Defining the group and retrieving posts from the group
 group = "me"
-app = Client("pyroApp")
-all_msg = ['hello', 'hii']
-with app:
-    for message in app.get_chat_history(group):
-        if message.text is not None:
-            all_msg.append(message.text)
+data = get_posts_from_the_channel(group)
 
 
-co = cohere.Client('R3ZspcOxRQuTMdS5i0UPR2Ozo0shjRmUAEsOoFoe')
+# Adding retrieved posts from the group to db
+client_url = "https://test1.semi.network"
+add_posts(data, client_url)
 
-response = co.embed(
-    model='small',
-    texts=all_msg
-)
 
-print(response)
+# Will be used later
+# co = cohere.Client('R3ZspcOxRQuTMdS5i0UPR2Ozo0shjRmUAEsOoFoe')
 
-# app.run()
+# response = co.embed(
+#     model='small',
+#     texts=all_msg
+# )
+
+# print(response)
+
+
+
+
+
+
+
+
+
+
+
