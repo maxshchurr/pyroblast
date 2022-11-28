@@ -24,6 +24,17 @@ More about weaviate: https://weaviate.io/
 # app = Client("pyroApp", api_id=api_id, api_hash=api_hash)
 
 
+def turn_into_embeddings(data):
+    co = cohere.Client('R3ZspcOxRQuTMdS5i0UPR2Ozo0shjRmUAEsOoFoe')
+
+    response = co.embed(
+        model='small',
+        texts=data
+    )
+
+    return response
+
+
 def get_posts_from_the_channel(group_id):
     channel = group_id
     app = Client("pyroApp")
@@ -41,9 +52,12 @@ def add_channel(channel, db_url):
     properties = {"name": channel}
     client.batch.add_data_object(properties, "Channels")
 
+    client.batch.create_objects()
+
 
 def add_posts(data, db_url):
     client = weaviate.Client(db_url)
+
     for msg in data:
         properties = {
           "description": msg
@@ -55,24 +69,20 @@ def add_posts(data, db_url):
 
 
 # Defining the group and retrieving posts from the group
-group = "me"
+group = "MargulanSeissembai"
 data = get_posts_from_the_channel(group)
 
 
-# Adding retrieved posts from the group to db
+# Turn into embeddings with cohere
+embeddings = turn_into_embeddings(data)
+
+
+# Adding channel and retrieved posts from the channel to db
 client_url = "https://test1.semi.network"
-add_posts(data, client_url)
 
+add_posts(embeddings, client_url)
+# add_channel(group, client_url)
 
-# Will be used later
-# co = cohere.Client('R3ZspcOxRQuTMdS5i0UPR2Ozo0shjRmUAEsOoFoe')
-
-# response = co.embed(
-#     model='small',
-#     texts=all_msg
-# )
-
-# print(response)
 
 
 

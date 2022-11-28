@@ -6,17 +6,16 @@ class_channel_obj = {
   "description": "A channel from telegram",
   "properties": [
     {
-      "dataType": [
-        "string"
-      ],
-      "description": "Name of the channel",
-      "name": "name"
-    },
-    {
-        "name": "PostsFromTheChannel",
-        "dataType": ["Posts"],
-        "description": "The posts from the channel",
+      "name": "channelName",
+      "dataType": ["string"],
+      "description": "Name of the channel"
     }
+    #   ,
+    # {
+    #     "name": "PostsFromTheChannel",
+    #     "dataType": ["Posts"],
+    #     "description": "The posts from the channel",
+    # }
   ]
 }
 
@@ -36,22 +35,26 @@ class_post_obj = {
 
 # Not sure about this
 
-# reference_property = {
-#   "dataType": [
-#     "Posts"
-#   ],
-#   "description": "The posts this channel has",
-#   "name": "hasPosts"
-# }
+reference_property = {
+  "dataType": [
+    "Posts"
+  ],
+  "description": "The posts this channel has",
+  "name": "hasPosts"
+}
 
 
 client = weaviate.Client("https://test1.semi.network")
 
 
-client.schema.create_class(class_post_obj)
+client.schema.delete_class('Channels')
 client.schema.create_class(class_channel_obj)
 
-# client.schema.delete_class('Channels')
-# client.schema.delete_class('Posts')
+client.schema.delete_class('Posts')
+client.schema.create_class(class_post_obj)
 
 # client.schema.property.create("Channels", reference_property)
+
+
+
+
